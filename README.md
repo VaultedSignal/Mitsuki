@@ -20,3 +20,10 @@ Mitsuki is a decoupled, modular, and locally hosted AI companion framework. Desi
    ```powershell
    git clone [https://github.com/VaultedSignal/Mitsuki.git](https://github.com/VaultedSignal/Mitsuki.git)
    cd Mitsuki
+   python -m venv .venv
+   .\.venv\Scripts\Activate
+   pip install -r requirements.txt
+2. Make sure your local Ollama server is active, then pull a compatible model like Llama 3.1:
+   ollama pull llama3.1
+3. Launch Mitsuki:
+   python -m mitsuki.main
