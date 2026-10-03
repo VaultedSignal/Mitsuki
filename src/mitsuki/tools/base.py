@@ -1,7 +1,12 @@
 import subprocess
 import platform
 import psutil
+import httpx
 from typing import Dict, Any
+from ddgs import DDGS
+from bs4 import BeautifulSoup
+from typing import Optional
+
 
 class SystemTools:
     """A collection of safe local environment tools for Mitsuki."""
@@ -82,3 +87,83 @@ class SystemTools:
                 return "No major monitored gaming or media apps are currently active."
         except Exception as e:
             return f"Error checking processes: {str(e)}"
+
+    @staticmethod
+    def web_search(query: str, max_results: int = 10) -> str:
+        """Perform a quick web search using ddgs."""
+        try:
+            results = []
+            with DDGS() as client:
+                search_gen = client.text(query, max_results=max_results)
+                if search_gen:
+                    for r in search_gen:
+                        results.append(r)
+            
+            if not results:
+                return "No relevant web search results found."
+            
+            formatted = "[Live Internet Search Findings]\n"
+            for r in results:
+                formatted += f"- {r.get('title')}: {r.get('body')}\n"
+            return formatted
+        except Exception as e:
+            return f"Error performing web search: {e}"
+
+    #Half decent scraper
+    @staticmethod
+    def scrape_web_page(url: str, max_chars: int = 4000) -> str:
+        """Fetch and parse clean text content from a given URL."""
+        try:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+            with httpx.Client(follow_redirects=True, timeout=10.0) as client:
+                response = client.get(url, headers=headers)
+                response.raise_for_status()
+
+                # Parse HTML content
+                soup = BeautifulSoup(response.text, "html.parser")
+
+                # Remove script, style, nav, and footer elements to reduce clutter
+                for element in soup(["script", "style", "nav", "footer", "header", "aside"]):
+                    element.decompose()
+
+                # Extract readable text
+                text = soup.get_text(separator="\n", strip=True)
+                
+                if len(text) > max_chars:
+                    text = text[:max_chars] + "\n[Content truncated due to length...]"
+
+                return f"Contents of URL ({url}):\n{text}"
+        except Exception as e:
+            return f"Error scraping web page: {e}"
+
+    #Google intergrations
+    @staticmethod
+    def check_calendar() -> str:
+        from mitsuki.tools.google_calendar import GoogleCalendarTool
+        return GoogleCalendarTool.get_upcoming_events()
+
+    @staticmethod
+    def check_gmail() -> str:
+        """Fetches recent emails from Gmail."""
+        from mitsuki.tools.google_gmail import GoogleGmailTool
+        return GoogleGmailTool.get_recent_emails()
+
+    @staticmethod
+    def check_tasks() -> str:
+        """Fetches pending items from Google Tasks."""
+        from mitsuki.tools.google_tasks import GoogleTasksTool
+        return GoogleTasksTool.get_pending_tasks()
+
+    @staticmethod
+    def add_task(task_title: str) -> str:
+        """Adds a new task to Google Tasks."""
+        from mitsuki.tools.google_tasks import GoogleTasksTool
+        return GoogleTasksTool.create_task(task_title)
+
+    @staticmethod
+    def add_calendar_event(summary: str, start_time: str, end_time: Optional[str] = None) -> str:
+        """Adds a new event to Google Calendar."""
+        from mitsuki.tools.google_calendar import GoogleCalendarTool
+        return GoogleCalendarTool.create_event(summary, start_time, end_time)   

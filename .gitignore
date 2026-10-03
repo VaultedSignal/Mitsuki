@@ -33,3 +33,10 @@ $RECYCLE.BIN/
 # Local Environment & Secrets (Crucial if you add API keys later)
 .env
 *.local
+
+# Google stuff
+/data/credentials.json
+data/token.json
+
+# Other
+Mitsuki.bat

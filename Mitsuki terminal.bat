@@ -1,6 +1,5 @@
 @echo off
-title Mitsuki AI Companion
-echo Starting Mitsuki...
+title Mitsuki AI Companion - Discord Gateway
 
 :: Navigate to project directory (just in case)
 cd /d "%~dp0"
@@ -10,7 +9,7 @@ if exist ".venv\Scripts\activate.bat" (
     call .venv\Scripts\activate.bat
 )
 
-:: Run the Python module
+:: Run the script that boots up the terminal chat
 python -m mitsuki.main
 
 pause
